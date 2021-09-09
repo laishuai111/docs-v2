@@ -3,7 +3,7 @@ title: Troubleshoot issues writing data
 seotitle: Troubleshoot issues writing data
 list_title: Troubleshoot issues writing data
 weight: 106 >
-  Troubleshoot issues writing data. Find response codes for failed writes. Discover how writes fail, from exceeding rate or payload limits, to syntax errors and schema conflicts.
+  Troubleshoot issues writing data. Find response codes for failed writes. Discover how writes fail, from exceeding rate or payload limits, to syntax errors and schema conflicts. Find suggestions to fix failures.
 menu:
   influxdb_2_0:
     name: Troubleshoot issues
@@ -44,16 +44,20 @@ Write requests return the following status codes:
   If some of your data did not write to the bucket, see how to [troubleshoot rejected points](#troubleshoot-rejected-points).
     {{% /note %}}
 
-- `400` **Bad request**: The [line protocol](/influxdb/v2.0/reference/syntax/line-protocol/) data in the request was malformed.
-        The response body contains the first malformed line in the data. All request data was rejected and not written.
+- `400` **Bad request**: The [line protocol](/influxdb/v2.0/reference/syntax/line-protocol/) data in the request is malformed.
+  The response body contains the first malformed line in the data. All request data was rejected and not written.
 - `401` **Unauthorized**: May indicate one of the following:
   - [`Authorization: Token` header](/influxdb/v2.0/api-guide/api_intro/#authentication) is missing or malformed.
   - [API token](/influxdb/v2.0/api-guide/api_intro/#authentication) value is missing from the header.
-  - API token does not have sufficient permissions to write to the organization and the bucket. For more information about token types and permissions, see [Manage API tokens](/influxdb/v2.0/security/tokens/)
-- `404` **Not found**: A requested resource (e.g. an organization or bucket) was not found. The response body contains the requested resource type, e.g. "organization", and resource name.
-- `413` **Request entity too large**: All request data was rejected and not written. InfluxDB OSS only returns this error if the [Go (golang) `ioutil.ReadAll()`](https://pkg.go.dev/io/ioutil#ReadAll) function raises an error. 
+  - API token does not have sufficient permissions to write to the organization and the bucket.
+    For more information about token types and permissions, see [Manage API tokens](/influxdb/v2.0/security/tokens/).
+- `404` **Not found**: A requested resource (e.g. an organization or bucket) was not found.
+  The response body contains the requested resource type, e.g. "organization", and resource name.
+- `413` **Request entity too large**: All request data was rejected and not written.
+  InfluxDB OSS only returns this error if the [Go (golang) `ioutil.ReadAll()`](https://pkg.go.dev/io/ioutil#ReadAll) function raises an error. 
 - `500` **Internal server error**: Default HTTP status for an error.
-- `503` **Service unavailable**: Server is temporarily unavailable to accept writes. The `Retry-After` header describes when to try the write again.
+- `503` **Service unavailable**: Server is temporarily unavailable to accept writes.
+  The `Retry-After` header describes when to try the write again.
 
 The `message` property of the response body may contain additional details about the error.
 

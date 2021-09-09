@@ -4,7 +4,7 @@ seotitle: Troubleshoot issues writing data
 list_title: Troubleshoot issues writing data
 weight: 105
 description: >
-  Troubleshoot issues writing data. Find response codes for failed writes. Discover how writes fail, from exceeding rate or payload limits, to syntax errors and schema conflicts.
+  Troubleshoot issues writing data. Find response codes for failed writes. Discover how writes fail, from exceeding rate or payload limits, to syntax errors and schema conflicts. Find suggestions to fix failures.
 menu:
   influxdb_cloud:
     name: Troubleshoot issues
@@ -49,14 +49,18 @@ Write requests return the following status codes:
   If some of your data did not write to the bucket, see how to [troubleshoot rejected points](#troubleshoot-rejected-points).
     {{% /note %}}
 
-- `400` **Bad request**: The [line protocol](/influxdb/cloud/reference/syntax/line-protocol/) data in the request was malformed.
+<<<<<<< HEAD
+- `400` **Bad request**: The [line protocol](/influxdb/cloud/reference/syntax/line-protocol/) data in the request is malformed.
    The response body contains the first malformed line in the data. All request data was rejected and not written.
 - `401` **Unauthorized**: May indicate one of the following:
   -  [`Authorization: Token` header](/influxdb/cloud/api-guide/api_intro/#authentication) is missing or malformed.
   - [API token](/influxdb/cloud/api-guide/api_intro/#authentication) value is missing from the header.
-  - API token does not have sufficient permissions to write to the organization and bucket. For more information about token types and permissions, see [Manage API tokens](/influxdb/cloud/security/tokens/)
-- `404` **Not found**: A requested resource (e.g. an organization or bucket) was not found. The response body contains the requested resource type, e.g. "organization", and resource name.
-- `413` **Request entity too large**: The payload exceeded the 50MB limit. All request data was rejected and not written.
+  - API token does not have sufficient permissions to write to the organization and bucket.
+    For more information about token types and permissions, see [Manage API tokens](/influxdb/cloud/security/tokens/)
+- `404` **Not found**: A requested resource (e.g. an organization or bucket) was not found.
+  The response body contains the requested resource type, e.g. "organization", and resource name.
+- `413` **Request entity too large**: The payload exceeded the 50MB limit.
+  All request data was rejected and not written.
 - `429` **Too many requests**: API token is temporarily over quota. The `Retry-After` header describes when to try the write request again.
 - `500` **Internal server error**: Default HTTP status for an error.
 - `503` **Service unavailable**: Server is temporarily unavailable to accept writes. The `Retry-After` header describes when to try the write again.
