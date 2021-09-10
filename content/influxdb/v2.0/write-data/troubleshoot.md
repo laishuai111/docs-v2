@@ -25,13 +25,13 @@ Learn how to handle and recover from errors when writing to InfluxDB.
 Write requests made to InfluxDB may fail for a number of reasons.
 Common failure scenarios that return an HTTP `4xx` or `5xx` error status code include the following:
 
-- Request exceeded a rate limit.
 - API token was invalid.
 - Client or server reached a timeout threshold.
-- Size of the data payload was too large.
 - Data was not formatted correctly.
+- Size of the data payload was too large.
 
-Writes may fail partially or completely even though InfluxDB returns an HTTP `2xx` status code for a valid request. For example, a partial write may occur when InfluxDB writes all points that conform to the bucket schema, but rejects points that have the wrong data type in a field.
+Writes may fail partially or completely even though InfluxDB returns an HTTP `2xx` status code for a valid request.
+For example, a partial write may occur when InfluxDB writes all points that conform to the bucket schema, but rejects points that have the wrong data type in a field.
 
 ## HTTP status codes
 
@@ -41,7 +41,7 @@ Write requests return the following status codes:
 - `204` **Success**: InfluxDB validated the request data format and accepted the data for writing to the bucket.
     {{% note %}}
   `204` doesn't indicate a successful write operation since writes are asynchronous.
-  If some of your data did not write to the bucket, see how to [troubleshoot rejected points](#troubleshoot-rejected-points).
+  If some of your data did not write to the bucket, see how to [check for rejected points](#review-rejected-points).
     {{% /note %}}
 
 - `400` **Bad request**: The [line protocol](/influxdb/v2.0/reference/syntax/line-protocol/) data in the request is malformed.
@@ -72,12 +72,52 @@ If you notice data is missing in your bucket, do the following:
 - Verify the timestamps match the [precision parameter](/influxdb/v2.0/write-data/#timestamp-precision).
 - Minimize payload size and network errors by [optimizing writes](/influxdb/v2.0/write-data/best-practices/optimize-writes/) 
 
-### Troubleshoot rejected points
+### Review rejected points
 
 InfluxDB may reject points even if the HTTP request returns "Success".
-If some of your data did not write to the bucket, check for [field type](/influxdb/v2.0/reference/key-concepts/data-elements/#field-value) differences between the missing data point and other points that have the same [series](/influxdb/v2.0/reference/key-concepts/data-elements/#series).
-For example, did you attempt to write `string` data to an `int` field?
+To get a log of rejected data points, query the [`rejected_points` measurement](/influxdb/v2.0/reference/internals/system-buckets/#_monitoring-bucket-schema) in your organization's `_monitoring` bucket.
 
-InfluxDB rejects points for the following reasons:
-- The **batch** contains another point with the same series, but one of the fields has a different value type.
-- The **bucket** contains another point with the same series, but one of the fields has a different value type.
+```js
+from(bucket: "_monitoring")
+  |> range(start:-1h)
+  |> filter(fn:(r) =>
+    r._measurement == "rejected_points"
+  )
+```
+
+InfluxDB returns `rejected_points` log entries.
+Each entry contains the `bucket` where the rejection occurred and a `reason` for the rejection.
+
+```sh
+rejected_points,bucket=YOUR_BUCKET_ID,field=YOUR_FIELD,gotType=Float,
+  measurement=YOUR_MEASUREMENT,reason=type\ conflict\ in\ batch\ write,
+  wantType=Integer count=1i 1627906197091972750
+```
+
+#### Troubleshoot field type conflicts
+
+Field type conflicts occur if you attempt to write different data types to a field.
+For example, you attempt to write `string` data to an `int` field.
+If InfluxDB rejects a point due to a [field type](/influxdb/v2.0/reference/key-concepts/data-elements/#field-value) conflict, the rejected point log entry contains the following data elements:
+
+| Name          | Value                                                                                                                                        |
+|:------        |:-----                                                                                                                                        |
+| `bucket`      | ID of the bucket that rejected the point.                                                                                                    |
+| `measurement` | Measurement name of the point.                                                                                                               |
+| `field`       | Name of the field that caused the rejection.                                                                                                 |
+| `reason`      | Brief description of the problem. See [reasons for rejected points](#reasons-for-rejected-points)                                            |
+| `gotType`     | Received [field](/influxdb/v2.0/reference/key-concepts/data-elements/#field-value) type: `Boolean`, `Float`, `Integer`, or `UnsignedInteger` |
+| `wantType`    | Expected [field](/influxdb/v2.0/reference/key-concepts/data-elements/#field-value) type: `Boolean`, `Float`, `Integer`, or `UnsignedInteger` |
+| `error`       | Additional error detail.                                                                                                                     |
+| `count`       | `1`                                                                                                                                          |
+| `<timestamp>` | Time the rejected point was logged.                                                                                                          |
+
+##### Reasons for rejected points
+
+Field type conflicts occur for the following reasons:
+
+| Reason                             | Meaning                                                                                                       |
+|:------                             |:-------                                                                                                       |
+| `type conflict in batch write`     | The **batch** contains another point with the same series, but one of the fields has a different value type.  |
+| `type conflict with existing data` | The **bucket** contains another point with the same series, but one of the fields has a different value type. |
+
