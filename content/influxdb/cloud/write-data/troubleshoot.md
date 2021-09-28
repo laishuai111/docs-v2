@@ -36,7 +36,7 @@ Common failure scenarios that return an HTTP `4xx` or `5xx` error status code in
 - Size of the data payload was too large.
 
 Writes may fail partially or completely even though InfluxDB returns an HTTP `2xx` status code for a valid request.
-For example, a partial write may occur when InfluxDB writes all points that conform to the bucket schema, but rejects points that have the wrong data type in a field.
+For example, a partial write may occur when InfluxDB writes points that conform to the schema of existing data, but rejects points that have the wrong data type in a field.
 
 ## HTTP status codes
 
@@ -102,6 +102,17 @@ rejected_points,bucket=YOUR_BUCKET,field=YOUR_FIELD,gotType=Float,
 
 Field type conflicts occur if you attempt to write different data types to a field.
 For example, you attempt to write `string` data to an `int` field.
+
+{{% note %}}
+If you want to reject batches that contain points with field type conflicts, use an [explicit bucket schema](/influxdb/cloud/organizations/buckets/bucket-schema/). Explicit bucket schemas reject the write request and return an HTTP `400 Bad Request` status code and a JSON response body like the following:
+```json
+{
+  "code": "invalid",
+  "message": "partial write error (2 written): unable to parse 'air_sensor,service=S1,sensor=L1 temperature=\"90.5\",humidity=70.0 1632850122': schema: field type for field \"temperature\" not permitted by schema; got String but expected Float"
+}
+```
+{{% /note %}}
+
 If InfluxDB rejects a point due to a [field type](/influxdb/cloud/reference/key-concepts/data-elements/#field-value) conflict, the rejected point log entry contains the following data elements:
 
 | Name          | Value                                                                                                                                        |
