@@ -18,11 +18,11 @@ related:
 
 Learn how to handle and recover from errors when writing to InfluxDB.
 
-- [Discover common failure scenarios](#common-failure-scenarios)
+- [Discover common failure scenarios](#discover-common-failure-scenarios)
 - [Review HTTP status codes](#review-http-status-codes)
 - [Troubleshoot failures](#troubleshoot-failures)
 
-## Common failure scenarios
+## Discover common failure scenarios
 
 InfluxDB write requests may fail for a number of reasons.
 Common failure scenarios that return an HTTP `4xx` or `5xx` error status code include the following:
@@ -38,7 +38,7 @@ Common failure scenarios that return an HTTP `4xx` or `5xx` error status code in
 Writes may fail partially or completely even though InfluxDB returns an HTTP `2xx` status code for a valid request.
 For example, a partial write may occur when InfluxDB writes points that conform to the schema of existing data, but rejects points that have the wrong data type in a field.
 
-## HTTP status codes
+## Review HTTP status codes
 
 InfluxDB uses conventional HTTP status codes to indicate the success or failure of a request.
 Write requests return the following status codes:
@@ -58,7 +58,8 @@ Write requests return the following status codes:
 - `404` **Not found**: A requested resource (e.g. an organization or bucket) was not found.
   The response body contains the requested resource type, e.g. "organization", and resource name.
 - `413` **Request entity too large**: The payload exceeded the 50MB limit.
-  All request data was rejected and not written.
+- `422` **Unprocessible entity**: Request data is invalid. `code` and `message` in the response body provide details about the problem.
+  All request data is rejected and not written.
 - `429` **Too many requests**: API token is temporarily over quota. The `Retry-After` header describes when to try the write request again.
 - `500` **Internal server error**: Default HTTP status for an error.
 - `503` **Service unavailable**: Server is temporarily unavailable to accept writes. The `Retry-After` header describes when to try the write again.
