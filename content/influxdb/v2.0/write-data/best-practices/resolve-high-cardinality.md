@@ -11,6 +11,20 @@ menu:
 
 If reads and writes to InfluxDB have started to slow down, high [series cardinality](/influxdb/v2.0/reference/glossary/#series-cardinality) (too many series) may be causing memory issues.
 
+{{% note %}}
+{{% oss-only %}}
+
+[`SHOW_SERIES_CARDINALITY`](/influxdb/v1.8/query_language/spec/#show-series-cardinality) returns the [series cardinality](/influxdb/v2.0/reference/glossary/#series-cardinality) of data, the number of unique series keys, stored in InfluxDB.
+
+{{% /oss-only %}}
+
+{{% cloud-only %}}
+
+The [`influxdb.cardinality()`](/{{< latest "flux" >}}/stdlib/influxdata/influxdb/cardinality) function returns the [series cardinality](/influxdb/v2.0/reference/glossary/#series-cardinality) of data, the number of unique series keys, stored in InfluxDB Cloud.
+
+{{% /cloud-only %}}
+{{% /note %}}
+
 To resolve high series cardinality, complete the following steps (for multiple buckets if applicable):
 
 1. [Review tags](#review-tags).
