@@ -11,6 +11,58 @@ menu:
 
 If reads and writes to InfluxDB have started to slow down, high [series cardinality](/influxdb/v2.0/reference/glossary/#series-cardinality) (too many series) may be causing memory issues.
 
+
+
+
+## Avoid too many series
+
+{{% oss-only %}}
+
+  IndexDB indexes the following data elements to speed up reads:
+  - [measurement](/influxdb/v2.0/reference/glossary/#measurement)
+  - [tags](/influxdb/v2.0/reference/glossary/#tag)
+
+{{% /oss-only %}}
+{{% cloud-only %}}
+
+  IndexDB indexes the following data elements to speed up reads:
+  - [measurement](/influxdb/v2.0/reference/glossary/#measurement)
+  - [tags](/influxdb/v2.0/reference/glossary/#tag)
+  - [field keys](/influxdb/cloud/reference/glossary/#field-key)
+
+{{% /cloud-only %}}
+
+{{% oss-only %}}
+
+  [`SHOW SERIES CARDINALITY`](/influxdb/v2.0/query_language/spec/#show-series-cardinality) measures the number of unique [series](/influxdb/v2.0/reference/glossary/#series) in your data.
+
+{{% /oss-only %}}
+
+{{% cloud-only %}}
+
+  [`influxdb.cardinality()`](/{{< latest "flux" >}}/stdlib/influxdata/influxdb/cardinality) measures the number of series keys in your data.
+
+{{% /cloud-only %}}
+
+
+Each unique set of indexed data elements forms a [series key](/influxdb/v2.0/reference/glossary/#series-key).
+[Tags](/influxdb/v2.0/reference/glossary/#tag) containing highly variable information like unique IDs, hashes, and random strings lead to a large number of [series](/influxdb/v2.0/reference/glossary/#series), also known as high [series cardinality](/influxdb/v2.0/reference/glossary/#series-cardinality).
+High series cardinality is a primary driver of high memory usage for many database workloads.
+Therefore, to reduce memory overhead, consider storing high-cardinality values in fields rather than in tags.
+
+{{% note %}}
+
+If reads and writes to InfluxDB start to slow down, you may have high series cardinality (too many series).
+See how to [resolve high cardinality](/influxdb/v2.0/write-data/best-practices/resolve-high-cardinality/).
+
+{{% /note %}}
+
+
+
+
+
+
+
 {{% note %}}
 {{% oss-only %}}
 
